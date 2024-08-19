@@ -28,19 +28,25 @@ LOG_LEVEL = None
 
 # Set '-' to print to screen
 LOG_FOLDER = "ASTREAM_LOGS/"
+# SUBFOLDERS = ["BASIC", "BASIC-MCOM", "BOLA", "BOLA-MCOM", "NETFLIX", "NETFLIX-MCOM", "SARA", "SARA-MCOM"]
 if not os.path.exists(LOG_FOLDER):
     os.makedirs(LOG_FOLDER)
+# for sf in SUBFOLDERS:
+#     if not os.path.exists(os.path.join(LOG_FOLDER, sf)):
+#         os.makedirs(os.path.join(LOG_FOLDER, sf))
 
-LOG_FILENAME = os.path.join(LOG_FOLDER, 'DASH_RUNTIME_LOG')
+LOG_FILENAME = 'DASH_RUNTIME_LOG'
 # Logs related to the statistics for the video
 # PLAYBACK_LOG_FILENAME = os.path.join(LOG_FOLDER, strftime('DASH_PLAYBACK_LOG_%Y-%m-%d.%H_%M_%S.csv'))
 # Buffer logs created by dash_buffer.py
-BUFFER_LOG_FILENAME = os.path.join(LOG_FOLDER, strftime('DASH_BUFFER_LOG_%Y-%m-%d.%H_%M_%S.csv'))
+BUFFER_LOG_FILENAME = strftime('DASH_BUFFER_LOG_%Y-%m-%d.%H_%M_%S.csv')
 LOG_FILE_HANDLE = None
 # To be set by configure_log_file.py
 LOG = None
 # JSON Filename
-JSON_LOG = os.path.join(LOG_FOLDER, strftime('ASTREAM_%Y-%m-%d.%H_%M_%S.json'))
+JSON_LOG = strftime('ASTREAM_%Y-%m-%d.%H_%M_%S.json')
+JSON_QOE_INPUT_LOG = strftime('QOE_INPUT_%Y-%m-%d.%H_%M_%S.json')
+JSON_QOE_OUTPUT_LOG = strftime('QOE_OUTPUT_%Y-%m-%d.%H_%M_%S.json')
 JSON_HANDLE = dict()
 JSON_HANDLE['playback_info'] = {'start_time': None,
                                 'end_time': None,
@@ -63,10 +69,8 @@ SARA_SAMPLE_COUNT = 5
 # Constants for the Buffer in the Weighted adaptation scheme (in segments)
 INITIAL_BUFFERING_COUNT = 1
 RE_BUFFERING_COUNT = 1
-ALPHA_BUFFER_COUNT = 5
-BETA_BUFFER_COUNT = 10
-# Set the size of the buffer in terms of segments. Set to unlimited if 0 or None
-MAX_BUFFER_SIZE = None
+ALPHA_BUFFER_COUNT = 2  # 20s: 2, 40s: 5
+BETA_BUFFER_COUNT = 4  # 20s: 4, 40s: 10
 
 # ---------------------------------------------------
 # Netflix (Buffer-based) ADAPTATION
@@ -75,10 +79,30 @@ MAX_BUFFER_SIZE = None
 # Constants is terms of buffer occupancy PERCENTAGE(%)
 NETFLIX_RESERVOIR = 0.1
 NETFLIX_CUSHION = 0.9
-# Buffer Size in Number of segments 240/4
-NETFLIX_BUFFER_SIZE = 60
+# Buffer Size in seconds
+NETFLIX_BUFFER_SIZE_SECONDS = 20  # 120
+# Buffer Size in Number of segments -> BUFFER_SIZE_SECONDS/SEG_LENGTH -> Adjust in dash_client
+NETFLIX_BUFFER_SIZE = NETFLIX_BUFFER_SIZE_SECONDS / 4  # Use 4 as default segment length
 NETFLIX_INITIAL_BUFFER = 2
 NETFLIX_INITIAL_FACTOR = 0.875
+
+# ---------------------------------------------------
+# BOLA ADAPTATION
+# ---------------------------------------------------
+# Constants for the BOLA scheme adaptation/bola_dash.py (Buffer related constants are all in seconds)
+BOLA_STATE_ONE_BITRATE = 0
+BOLA_STATE_STARTUP = 1
+BOLA_STATE_STEADY = 2
+MINIMUM_BUFFER_S = 8  # BOLA should never add artificial delays if buffer is less than MINIMUM_BUFFER_S.
+STABLE_BUFFER_TIME = 10 # 20s: 10 # 40s: 20
+
+MINIMUM_BUFFER_PER_BITRATE_LEVEL_S = 2  # E.g. if there are 5 bitrates, BOLA switches to top bitrate at buffer = MINIMUM_BUFFER_S + 5 * MINIMUM_BUFFER_PER_BITRATE_LEVEL_S = X [s].
+# If Schedule Controller does not allow buffer to reach that level, it can be achieved through the placeholder buffer level.
+
+PLACEHOLDER_BUFFER_DECAY = 0.99  # Make sure placeholder buffer does not stick around too long.
+
+# Set the size of the buffer in terms of segments. Set to unlimited if 0 or None
+MAX_BUFFER_SIZE = None
 
 # For ping.py
 PING_PACKETS = 10

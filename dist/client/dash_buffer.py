@@ -1,5 +1,8 @@
 from __future__ import division
-import Queue
+try:
+    import queue as Queue
+except ImportError:
+    import Queue
 import threading
 import time
 import csv
@@ -112,7 +115,7 @@ class DashPlayer:
                     config_dash.JSON_HANDLE['playback_info']['interruptions']['count'] += 1
                 # If the size of the buffer is greater than the RE_BUFFERING_DURATION then start playback
                 else:
-                    # If the RE_BUFFERING_DURATION is greate than the remiang length of the video then do not wait
+                    # If the RE_BUFFERING_DURATION is greater than the remaining length of the video then do not wait
                     remaining_playback_time = self.playback_duration - self.playback_timer.time()
                     if ((self.buffer.qsize() >= config_dash.RE_BUFFERING_COUNT) or (
                             config_dash.RE_BUFFERING_COUNT * self.segment_duration >= remaining_playback_time
@@ -123,7 +126,7 @@ class DashPlayer:
                             interruption = interruption_end - interruption_start
 
                             config_dash.JSON_HANDLE['playback_info']['interruptions']['events'].append(
-                                (interruption_start, interruption_end))
+                                (self.playback_timer.time(), self.playback_timer.time() + interruption))
                             config_dash.JSON_HANDLE['playback_info']['interruptions']['total_duration'] += interruption
                             config_dash.LOG.info("Duration of interruption = {}".format(interruption))
                             interruption_start = None
@@ -247,7 +250,7 @@ class DashPlayer:
                 stats = (log_time, str(self.playback_timer.time()), self.buffer.qsize(),
                          self.playback_state, action,bitrate)
             str_stats = [str(i) for i in stats]
-            with open(self.buffer_log_file, "ab") as log_file_handle:
+            with open(self.buffer_log_file, "a") as log_file_handle:
                 result_writer = csv.writer(log_file_handle, delimiter=",")
                 if header_row:
                     result_writer.writerow(header_row)

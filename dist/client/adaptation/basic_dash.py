@@ -1,7 +1,7 @@
 __author__ = 'pjuluri'
 
 import config_dash
-from adaptation import calculate_rate_index
+from .base_adaptation import calculate_rate_index
 
 
 def basic_dash(segment_number, bitrates, average_dwn_time,
@@ -14,14 +14,14 @@ def basic_dash(segment_number, bitrates, average_dwn_time,
     :param segment_download_time:  Time taken to download the current segment
     :param curr_rate: Current bitrate being used
     :return: next_rate : Bitrate for the next segment
-    :return: updated_dwn_time: Updated average downlaod time
+    :return: updated_dwn_time: Updated average download time
     """
 
     if average_dwn_time > 0 and segment_number > 0:
         updated_dwn_time = (average_dwn_time * (segment_number + 1) + segment_download_time) / (segment_number + 1)
     else:
         updated_dwn_time = segment_download_time
-    config_dash.LOG.debug("The average download time upto segment {} is {}. Before it was {}".format(segment_number,
+    config_dash.LOG.debug("The average download time up to segment {} is {}. Before it was {}".format(segment_number,
                                                                                                      updated_dwn_time,
                                                                                                      average_dwn_time))
 
@@ -37,7 +37,7 @@ def basic_dash(segment_number, bitrates, average_dwn_time,
     try:
         curr = bitrates.index(curr_rate)
     except ValueError:
-        config_dash.LOG.error("Current Bitrate not in the bitrate lsit. Setting to minimum")
+        config_dash.LOG.error("Current Bitrate not in the bitrate list. Setting to minimum")
         curr = calculate_rate_index(bitrates, curr_rate)
     next_rate = curr_rate
     if sigma_download < 1:
